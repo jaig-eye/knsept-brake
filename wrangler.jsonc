@@ -1,0 +1,25 @@
+{
+  // The Knsept Guard Brake Worker. Runs in your account, holds your token, and pauses only the
+  // queues listed below, only when Knsept Guard asks with a signed, fresh request.
+  //
+  // Before `wrangler deploy`:
+  //   1. Set CLOUDFLARE_ACCOUNT_ID and BRAKE_QUEUES below.
+  //   2. wrangler secret put CLOUDFLARE_API_TOKEN   (a token with only Account > Queues > Edit)
+  //   3. wrangler secret put BRAKE_SECRET           (from the Knsept Guard dashboard, shown once)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "knsept-brake",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  // Knsept Guard reaches the Worker at its workers.dev address, so keep this on.
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  // Remembers request ids for five minutes, so a signed request can't be sent twice.
+  "durable_objects": { "bindings": [{ "name": "SEEN", "class_name": "SeenRequests" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SeenRequests"] }],
+  "vars": {
+    // Your Cloudflare account ID: 32 letters and numbers, on your dashboard's account home.
+    "CLOUDFLARE_ACCOUNT_ID": "",
+    // The queues Guard may pause, by name, separated by commas. Anything else is refused.
+    "BRAKE_QUEUES": "",
+  },
+}
